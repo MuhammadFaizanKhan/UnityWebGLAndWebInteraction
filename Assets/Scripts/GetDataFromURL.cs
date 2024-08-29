@@ -4,7 +4,6 @@ public class GetDataFromURL : MonoBehaviour {
 
     public TextMesh tm;
 
-	// Use this for initialization
 	void Start () {
 
         int paramter = Application.absoluteURL.IndexOf("?");

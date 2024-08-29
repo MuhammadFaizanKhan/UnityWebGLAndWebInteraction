@@ -1,0 +1,57 @@
+<html>
+<head>
+<script>
+
+const url 			= 'ws://localhost:8080'
+const connection 	= new WebSocket(url);
+
+//connection.onopen = () => {
+  //connection.send('hey')
+//}
+
+connection.onopen = (function(){
+    connection.send('hey');
+})
+
+connection.onerror = (error) => {
+  console.log(`WebSocket error: ${error}`)
+}
+
+connection.onmessage = (e) => {
+  document.getElementById("ReceviedText").innerHTML += ("<li>" + e.data + "</li>");
+	
+   // ReceviedText
+  console.log(e.data);
+  console.log(e);
+
+  var reader = new FileReader(e.data);
+  console.log(reader.result);
+  
+}
+
+function SendMessage(){
+    var textSend = document.getElementById("textToSend").value;
+    connection.send(textSend) ;
+    
+}
+</script>
+</head>
+<body>
+<h1>This page is conncted with WebSocket.</h1>
+<h5>You can update websocket server address in this file at line 5</h5>
+
+
+<br>
+<input type="text" id="textToSend"/>
+<input type="button" onclick="SendMessage()" value="Send to unity webgl">
+<br>
+<br>
+Unity webgl command, type in above box.
+<ul>
+<li>cube rotate</li>
+<li>cube stop</li>
+</ul>
+<h2>Data Recevied:</h2>
+<div id="ReceviedText"></div>
+</body>
+</html>

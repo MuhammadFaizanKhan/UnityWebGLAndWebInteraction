@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,57 +11,59 @@ public class WebSocketDemo : MonoBehaviour {
     public  Text            websocketMessageText;
     public  Button          ReconnectButton;
     public  InputField      websocketAddress;
-    private WebSocket       w;
-    private bool            isConnFailed = false;
 
+    public TMP_Text connectionInfoText;
+
+    private WebSocket       webSocket;
+    
+    Rotator rotator;
+    public GameObject chatPanel;
+
+    private bool isConnFailed = true;
+    public bool IsConnFailed
+    {
+        get { return isConnFailed; }
+        set { 
+            isConnFailed = value;
+            TogglePanles();
+        }
+    }
     #endregion Vars
 
-    private void OnEnable()
-    {
-       // WebSocket.WSMessageReceviedEvent += NewMessageRecevied;
-    }
-
-    private void OnDisable()
-    {
-       // WebSocket.WSMessageReceviedEvent -= NewMessageRecevied;
-    }
-
-    // Use this for initialization
     void Start () {
-
+        rotator = FindAnyObjectByType<Rotator>();
         websocketAddress.text = "ws://localhost:8080";
-        StartCoroutine(WebSocketCon());  
-
     }
 
     IEnumerator WebSocketCon()
     {
-        //w = new WebSocket(new Uri("ws://localhost:8080"));
-        w = new WebSocket(new Uri(websocketAddress.text));
-
-        yield return StartCoroutine(w.Connect());
-
+        webSocket = new WebSocket(new Uri(websocketAddress.text));
+        yield return StartCoroutine(webSocket.Connect());
         Debug.Log("CONNECTED TO WEBSOCKETS");
-
         string lastMessage = "";
 
         while (true)
         {
-            string message = w.RecvString();
+            string message = webSocket.RecvString();
 
-            w.Recv();
-
+            webSocket.Recv();
+            
             if (message != lastMessage)
             {
                 NewMessageRecevied(message);//Now we are getting data from message send event.
                 Debug.Log("Message :: " + message);
             }
 
-            if (w.error != null) {
-                isConnFailed = true;
+            if (webSocket.error != null) {
+                IsConnFailed = true;
+                connectionInfoText.text = "Error.."+ webSocket.error;
                 Debug.Log("Error occured in websocket");
                 break;
 
+            }
+            else
+            {
+                IsConnFailed = false;
             }
 
             lastMessage = message;
@@ -69,60 +71,50 @@ public class WebSocketDemo : MonoBehaviour {
         }
     }
 
-    void Update()
+    void TogglePanles()
     {
-        if (isConnFailed)
+        if (IsConnFailed)
         {
             ReconnectButton.gameObject.SetActive(true);
+            chatPanel.SetActive(false);
+            
         }
         else
         {
             ReconnectButton.gameObject.SetActive(false);
+            chatPanel.SetActive(true);
+            connectionInfoText.text = "Connected..";
         }
     }
 
-    private void OnGUI()
+    public void SendString(TMP_InputField text)
     {
-
-        if(GUI.Button(new Rect(0, 0, 100, 100), "Send"))
-        {
-            w.SendString("Hi there from unity".ToString());
-        }
-
-       /* if (isConnFailed)
-        {
-            if (GUI.Button(new Rect(0, 100, 300, 100), "con failed! connect again"))
-            {
-                isConnFailed = false;
-                StartCoroutine(WebSocketCon());
-
-            }
-        }*/
         
-
+        webSocket.SendString(text.text);
     }
 
     public void NewMessageRecevied(string message)
     {
-
         Debug.Log("New Message Recevied : " + message);
-        if(message!="")
-        websocketMessageText.text += "\n"+ message;
+        if (message != "")
+        {
+            websocketMessageText.text += "\n" + message;
+            rotator.IsRotateCube(message?.ToLower());
+        }
 
-        FindObjectOfType<Rotator>().IsRotateCube(message);
+       
     }
 
     public void Reconnect()
     {
-        isConnFailed = false;
         StartCoroutine(WebSocketCon());
     }
 
     private void OnApplicationQuit()
     {
-        if (w != null)
+        if (webSocket != null)
         {
-            w.Close();
+            webSocket.Close();
         }
     }
 

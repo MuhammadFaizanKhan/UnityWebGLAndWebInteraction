@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
@@ -7,15 +6,7 @@ using UnityEngine.UI;
 public class PostDateToURL : MonoBehaviour {
 
     string postURL = "http://192.9.210.67/Web1/Server/ServerApi.php";
-
     public InputField dataPostUrl;
-    	
-	// Update is called once per frame
-	void Update () {
-
-        this.transform.Translate(Input.GetAxis("Horizontal") * 2 * Time.deltaTime, Input.GetAxis("Vertical") * 2 * Time.deltaTime, 0);
-
-	}
 
     private void OnMouseDown()
     {
@@ -27,8 +18,7 @@ public class PostDateToURL : MonoBehaviour {
 
     IEnumerator PostDateRequest()
     {
-        
-        WWW www = new WWW(postURL);
+        UnityWebRequest www = new UnityWebRequest(postURL);
         yield return www;
         if (www.isDone)
         {
@@ -39,10 +29,7 @@ public class PostDateToURL : MonoBehaviour {
             Debug.Log("data sent failed");
         }
 
-        Debug.Log(www.error);
-
-
-        
+        Debug.Log(www.error);        
     }
 
     public void UpdateDataPostURL()
